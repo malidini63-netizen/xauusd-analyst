@@ -1,4 +1,4 @@
-# price_fetcher.py — récupération OHLCV via yFinance (gratuit)
+# price_fetcher.py â€” rÃ©cupÃ©ration OHLCV via yFinance (gratuit)
 import yfinance as yf
 import pandas as pd
 
@@ -11,6 +11,7 @@ TIMEFRAMES_YF = {
     "M5":  ("5m",  "5d")
 }
 
+
 def get_candles(timeframe: str, bars: int = 100) -> pd.DataFrame:
     try:
         interval, period = TIMEFRAMES_YF.get(timeframe, ("1h", "30d"))
@@ -19,7 +20,15 @@ def get_candles(timeframe: str, bars: int = 100) -> pd.DataFrame:
         if df.empty:
             return pd.DataFrame()
         df = df.reset_index()
-        df = df.rename(columns={"Datetime": "datetime", "Date": "datetime", "Open": "open", "High": "high", "Low": "low", "Close": "close", "Volume": "volume"})
+        df = df.rename(columns={
+            "Datetime": "datetime",
+            "Date":     "datetime",
+            "Open":     "open",
+            "High":     "high",
+            "Low":      "low",
+            "Close":    "close",
+            "Volume":   "volume"
+        })
         df["datetime"] = pd.to_datetime(df["datetime"], utc=True)
         df = df[["datetime", "open", "high", "low", "close"]].tail(bars)
         return df.reset_index(drop=True)
@@ -27,8 +36,10 @@ def get_candles(timeframe: str, bars: int = 100) -> pd.DataFrame:
         print(f"Erreur yFinance [{timeframe}] : {e}")
         return pd.DataFrame()
 
+
 def get_all_timeframes(bars: int = 100) -> dict:
     return {tf: get_candles(tf, bars) for tf in TIMEFRAMES_YF.keys()}
+
 
 def get_current_price() -> float:
     try:
