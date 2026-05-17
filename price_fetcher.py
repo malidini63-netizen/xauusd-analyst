@@ -1,60 +1,42 @@
-# price_fetcher.py — récupération des données OHLCV via Twelve Data
-import requests
+# price_fetcher.py � r�cup�ration OHLCV via yFinance (gratuit)
+import yfinance as yf
 import pandas as pd
-from config import TWELVEDATA_API_KEY, SYMBOL, TIMEFRAMES
 
-BASE_URL = "https://api.twelvedata.com/time_series"
+SYMBOL_YF = "GC=F"
+
+TIMEFRAMES_YF = {
+    "H4":  ("4h",  "60d"),
+    "H1":  ("1h",  "30d"),
+    "M15": ("15m", "8d"),
+    "M5":  ("5m",  "5d")
+}
 
 def get_candles(timeframe: str, bars: int = 100) -> pd.DataFrame:
-    """Récupère les bougies OHLCV pour un timeframe donné"""
-
-    params = {
-        "symbol":     SYMBOL,
-        "interval":   TIMEFRAMES.get(timeframe, timeframe),
-        "outputsize": bars,
-        "apikey":     TWELVEDATA_API_KEY,
-        "format":     "JSON"
-    }
-
     try:
-        response = requests.get(BASE_URL, params=params)
-        response.raise_for_status()
-        data = response.json()
-
-        if "values" not in data:
-            print(f"Erreur Twelve Data [{timeframe}] : {data.get('message', 'inconnue')}")
+        interval, period = TIMEFRAMES_YF.get(timeframe, ("1h", "30d"))
+        ticker = yf.Ticker(SYMBOL_YF)
+        df = ticker.history(interval=interval, period=period)
+        if df.empty:
             return pd.DataFrame()
-
-        df = pd.DataFrame(data["values"])
-        df["datetime"] = pd.to_datetime(df["datetime"])
-        df = df.sort_values("datetime").reset_index(drop=True)
-
-        for col in ["open", "high", "low", "close"]:
-            df[col] = pd.to_numeric(df[col])
-
-        return df
-
+        df = df.reset_index()
+        df = df.rename(columns={"Datetime": "datetime", "Date": "datetime", "Open": "open", "High": "high", "Low": "low", "Close": "close", "Volume": "volume"})
+        df["datetime"] = pd.to_datetime(df["datetime"], utc=True)
+        df = df[["datetime", "open", "high", "low", "close"]].tail(bars)
+        return df.reset_index(drop=True)
     except Exception as e:
-        print(f"Erreur price_fetcher [{timeframe}] : {e}")
+        print(f"Erreur yFinance [{timeframe}] : {e}")
         return pd.DataFrame()
 
-
 def get_all_timeframes(bars: int = 100) -> dict:
-    """Récupère les données pour tous les timeframes"""
-    return {
-        tf: get_candles(tf, bars)
-        for tf in TIMEFRAMES.keys()
-    }
-
+    return {tf: get_candles(tf, bars) for tf in TIMEFRAMES_YF.keys()}
 
 def get_current_price() -> float:
-    """Récupère le prix actuel de XAUUSD"""
     try:
-        url = "https://api.twelvedata.com/price"
-        params = {"symbol": SYMBOL, "apikey": TWELVEDATA_API_KEY}
-        response = requests.get(url, params=params)
-        data = response.json()
-        return float(data.get("price", 0))
+        ticker = yf.Ticker(SYMBOL_YF)
+        data = ticker.history(period="1d", interval="1m")
+        if not data.empty:
+            return round(float(data["Close"].iloc[-1]), 2)
+        return 0.0
     except Exception as e:
         print(f"Erreur prix actuel : {e}")
         return 0.0
