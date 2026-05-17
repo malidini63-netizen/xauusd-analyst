@@ -1,6 +1,6 @@
 streamlit
 plotly
-pandas
+pandas==2.2.2
 numpy
 requests
 python-dotenv
