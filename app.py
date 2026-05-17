@@ -29,14 +29,28 @@ st.markdown("""
     .metric-value { font-size: 1.8em; font-weight: bold; color: #f0c040; }
     .metric-label { font-size: 0.85em; color: #aaa; margin-top: 5px; }
     .level-card {
-        background: #1a1a2e;
-        border-radius: 8px;
-        padding: 10px 15px;
-        margin: 5px 0;
-    }
-    .bull { border-left: 3px solid #26a269; }
-    .bear { border-left: 3px solid #e01b24; }
-    .neutral { border-left: 3px solid #f0c040; }
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 5px 0;
+    color: #111111;
+    font-weight: 500;
+}
+.bull { 
+    background: #e8f5e9;
+    border-left: 5px solid #26a269;
+    color: #1a5c2a;
+}
+.bear { 
+    background: #fdecea;
+    border-left: 5px solid #e01b24;
+    color: #7a0c0c;
+}
+.neutral { 
+    background: #fff8e1;
+    border-left: 5px solid #f0c040;
+    color: #7a5c00;
+}
 </style>
 """, unsafe_allow_html=True)
 
