@@ -1,9 +1,9 @@
-# pe_generator.py — génération du Plan d'Exécution via Groq IA
+# pe_generator.py — génération du Plan d'Exécution via Grok IA
 import json
-from groq import Groq
-from config import GROQ_API_KEY, AI_MODEL
+from grok import Grok
+from config import GROK_API_KEY, AI_MODEL
 
-client = Groq(api_key=GROQ_API_KEY)
+client = Grok(api_key=GROK_API_KEY)
 
 
 def build_context(price: float, analyses: dict, htf_bias: dict) -> str:
