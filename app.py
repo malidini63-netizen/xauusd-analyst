@@ -1,4 +1,5 @@
 # app.py — XAUUSD Analyst Dashboard
+from storage import save_pe, get_last_pe, clear_history
 import streamlit as st
 import plotly.graph_objects as go
 from datetime import datetime, timezone
@@ -261,3 +262,39 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
 
         with st.expander("👁️ Aperçu message Telegram"):
             st.text(alert_msg)
+            # Sauvegarde automatique du PE
+save_pe(price, htf_bias, pe)
+
+# ── HISTORIQUE PE ─────────────────────────────────────────
+st.divider()
+st.subheader("📜 Historique des Plans d'Exécution")
+history = get_last_pe(10)
+
+if not history:
+    st.info("Aucun PE enregistré pour l'instant.")
+else:
+    if st.button("🗑️ Effacer l'historique"):
+        clear_history()
+        st.rerun()
+
+    for entry in reversed(history):
+        direction = entry.get("direction", "N/A")
+        emoji = "📈" if direction == "LONG" else "📉" if direction == "SHORT" else "⏳"
+        bias = entry.get("bias", "N/A")
+        with st.expander(f"{emoji} {entry['timestamp']} — {direction} | {bias} @ {entry['price']}"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"**🎯 Entrée :** `{entry['entree']}`")
+                st.markdown(f"**🛑 SL :** `{entry['sl']}`")
+                st.markdown(f"**✅ TP1 :** `{entry['tp1']}`")
+                st.markdown(f"**✅ TP2 :** `{entry['tp2']}`")
+            with col2:
+                st.markdown(f"**📊 R/R :** `{entry['rr']}`")
+                st.markdown(f"**⚠️ Risque :** {entry['risque']}")
+                st.markdown(f"**⏰ Timing :** {entry['timing']}")
+            st.markdown(f"**🚫 Invalidation :** `{entry['invalidation']}`")
+            st.write(entry.get("resume", ""))
+            if entry.get("niveaux"):
+                st.markdown("**📌 Niveaux clés :**")
+                for n in entry["niveaux"]:
+                    st.markdown(f"- `{n}`")
