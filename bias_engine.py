@@ -73,7 +73,7 @@ def compute_htf_bias(analyses: dict) -> dict:
     details = []
 
     # Poids par timeframe
-    weights = {"H4": 3, "H1": 2, "M15": 1, "M5": 0.5}
+    weights = {"H4": 3, "H1": 2, "M15": 1, "M5": 0.5, "M1": 0.25}
 
     for tf, analysis in analyses.items():
         if analysis.get("error"):

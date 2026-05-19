@@ -11,7 +11,8 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID')
 
 SYMBOL = 'XAU/USD'
-TIMEFRAMES = {'H4': '4h', 'H1': '1h', 'M15': '15min', 'M5': '5min'}
+TIMEFRAMES = {'H4': '4h', 'H1': '1h', 'M15': '15min', 'M5': '5min',
+    "M1":  "1min"}
 
 def assert_config():
     missing = [k for k, v in {'GROQ_API_KEY': GROQ_API_KEY, 'AI_MODEL': AI_MODEL}.items() if not v]
