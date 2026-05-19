@@ -16,7 +16,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS
 st.markdown("""
 <style>
     .metric-card {
@@ -30,70 +29,47 @@ st.markdown("""
     .metric-value { font-size: 1.8em; font-weight: bold; color: #f0c040; }
     .metric-label { font-size: 0.85em; color: #aaa; margin-top: 5px; }
     .level-card {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 12px 15px;
-    margin: 5px 0;
-    color: #111111;
-    font-weight: 500;
-}
-.bull { 
-    background: #e8f5e9;
-    border-left: 5px solid #26a269;
-    color: #1a5c2a;
-}
-.bear { 
-    background: #fdecea;
-    border-left: 5px solid #e01b24;
-    color: #7a0c0c;
-}
-.neutral { 
-    background: #fff8e1;
-    border-left: 5px solid #f0c040;
-    color: #7a5c00;
-}
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin: 5px 0;
+        color: #111111;
+        font-weight: 500;
+    }
+    .bull { background: #e8f5e9; border-left: 5px solid #26a269; color: #1a5c2a; }
+    .bear { background: #fdecea; border-left: 5px solid #e01b24; color: #7a0c0c; }
+    .neutral { background: #fff8e1; border-left: 5px solid #f0c040; color: #7a5c00; }
 </style>
 """, unsafe_allow_html=True)
 
 assert_config()
 
-# ── SIDEBAR ──────────────────────────────────────────────
 with st.sidebar:
     st.title("⚙️ Paramètres")
     st.divider()
     bars = st.slider("📊 Nombre de bougies", 50, 200, 100, step=10)
     st.divider()
     st.caption(f"🕐 {datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M UTC')}")
-    st.caption("📡 Source : Twelve Data")
+    st.caption("📡 Source : yFinance")
     st.caption("🤖 IA : Groq LLaMA 3")
 
-# ── HEADER ───────────────────────────────────────────────
 st.markdown("# 📊 XAUUSD — Technical Analyst")
-st.caption("Analyse ICT/SMC multi-timeframe • OB • FVG • CHoCH • BOS • PE automatique")
+st.caption("Analyse ICT/SMC multi-timeframe • OB • FVG • CHoCH • BOS • M1 Scalping • PE automatique")
 st.divider()
 
-# ── SESSION STATE ─────────────────────────────────────────
 for key in ["analyses", "htf_bias", "pe", "price"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
-# ── BOUTON ANALYSE ────────────────────────────────────────
 if st.button("🔍 Lancer l'analyse technique", type="primary", use_container_width=True):
-
     with st.spinner("💰 Récupération du prix actuel..."):
         st.session_state.price = get_current_price()
-
     with st.spinner("📊 Récupération des données multi-timeframe..."):
         all_data = get_all_timeframes(bars=bars)
-
     with st.spinner("🧠 Analyse de la structure ICT/SMC..."):
-        analyses = {
-            tf: analyze_timeframe(df, tf)
-            for tf, df in all_data.items()
-        }
+        analyses = {tf: analyze_timeframe(df, tf) for tf, df in all_data.items()}
         st.session_state.analyses = analyses
         st.session_state.htf_bias = compute_htf_bias(analyses)
-
     with st.spinner("🤖 Génération du Plan d'Exécution IA..."):
         st.session_state.pe = generate_pe(
             st.session_state.price,
@@ -103,7 +79,6 @@ if st.button("🔍 Lancer l'analyse technique", type="primary", use_container_wi
 
 st.divider()
 
-# ── AFFICHAGE ─────────────────────────────────────────────
 if st.session_state.analyses and st.session_state.htf_bias and st.session_state.pe:
 
     price    = st.session_state.price
@@ -112,7 +87,6 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
     pe       = st.session_state.pe
     sp       = pe.get("scenario_principal", {})
 
-    # ── PRIX + BIAIS ─────────────────────────────────────
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown(f"""<div class="metric-card">
@@ -139,7 +113,6 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
 
     st.divider()
 
-    # ── JAUGE BIAIS ───────────────────────────────────────
     score = htf_bias["score"]
     gauge_color = "#26a269" if score > 0 else "#e01b24" if score < 0 else "#f0c040"
     fig_gauge = go.Figure(go.Indicator(
@@ -164,22 +137,16 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
         font={"color": "white"}
     )
     st.plotly_chart(fig_gauge, use_container_width=True)
-
     st.divider()
 
-    # ── CONTENU PRINCIPAL ─────────────────────────────────
     col_left, col_right = st.columns([1, 1])
 
     with col_left:
-
-        # Détail HTF
         st.subheader("🏗️ Structure Multi-Timeframe")
         for line in htf_bias["details"]:
             st.markdown(line)
-
         st.divider()
 
-        # Niveaux par TF
         st.subheader("📐 Niveaux ICT/SMC")
         for tf, analysis in analyses.items():
             if analysis.get("error"):
@@ -209,8 +176,6 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
                     st.markdown(f"💧 **SSL** : `{analysis['nearest_ssl']['level']}`")
 
     with col_right:
-
-        # Plan d'Exécution
         st.subheader("🎯 Plan d'Exécution (PE)")
         st.info(pe.get("resume_marche", ""))
 
@@ -218,7 +183,6 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
             direction = sp.get("direction", "")
             css = "bull" if direction == "LONG" else "bear" if direction == "SHORT" else "neutral"
             emoji = "📈" if direction == "LONG" else "📉" if direction == "SHORT" else "⏳"
-
             st.markdown(f"""<div class="level-card {css}">
                 <strong>{emoji} {direction}</strong><br>
                 🎯 Entrée : <code>{sp.get('entree_zone', 'N/A')}</code>
@@ -239,7 +203,6 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
             </div>""", unsafe_allow_html=True)
 
         st.divider()
-
         st.markdown(f"🚫 **Invalidation :** `{pe.get('invalidation', 'N/A')}`")
         st.markdown(f"💬 _{pe.get('patience', '')}_")
 
@@ -250,7 +213,10 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
 
         st.divider()
 
-        # Telegram
+        # Sauvegarde automatique
+        save_pe(price, htf_bias, pe)
+        st.caption("💾 PE sauvegardé.")
+
         alert_msg = format_pe_alert(price, htf_bias, pe)
         if st.button("📱 Envoyer PE sur Telegram", type="secondary", use_container_width=True):
             with st.spinner("Envoi..."):
@@ -262,8 +228,6 @@ if st.session_state.analyses and st.session_state.htf_bias and st.session_state.
 
         with st.expander("👁️ Aperçu message Telegram"):
             st.text(alert_msg)
-            # Sauvegarde automatique du PE
-save_pe(price, htf_bias, pe)
 
 # ── HISTORIQUE PE ─────────────────────────────────────────
 st.divider()
@@ -291,7 +255,7 @@ else:
             with col2:
                 st.markdown(f"**📊 R/R :** `{entry['rr']}`")
                 st.markdown(f"**⚠️ Risque :** {entry['risque']}")
-                st.markdown(f"**⏰ Timing :** {entry['timing']}")
+                st.markdown(f"**⏰ Timing :** {entry['timing']}`")
             st.markdown(f"**🚫 Invalidation :** `{entry['invalidation']}`")
             st.write(entry.get("resume", ""))
             if entry.get("niveaux"):
